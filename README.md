@@ -1,7 +1,7 @@
-#pyspapi 
+# pyspapi 
 Фреймворк [API](https://github.com/sp-worlds/api-docs) для серверов СП
 
-##Установка
+## Установка
 **Требуется *Python 3.7* или выше**
 
 *Windows*
@@ -13,8 +13,8 @@
 $ sudo apt pip3 install pyspapi
 ```
 
-##Примеры
-###Оплата
+## Примеры
+### [Оплата](https://github.com/sp-worlds/api-docs/blob/main/PAYMENTS.md)
 
 ```Python
 import spapi
@@ -34,7 +34,7 @@ print(api.payment(amount=1,
 - `redirectUrl` - URL страницы, на которую попадет пользователь после оплаты
 - `webhookUrl` - URL, куда наш сервер направит запрос, чтобы оповестить ваш сервер об успешной оплате
 - `data` - Строка до 100 символов, сюда можно пометить любые полезные данных.
-####Получение данных об успешной оплате
+#### Получение данных об успешной оплате
 После успешной оплаты на URL указанный в `webhookUrl` придет POST запрос.
 
 *Тело запроса будет в формате JSON:*
@@ -43,7 +43,7 @@ print(api.payment(amount=1,
 - `amount` - Стоимость покупки
 - `data` - Данные, которые вы отдали при создании запроса на оплату
 
-###Переводы
+### [Переводы](https://github.com/sp-worlds/api-docs/blob/main/TRANSACTIONS.md)
 
 ```Python
 import spapi
@@ -62,7 +62,7 @@ print(api.transaction(receiver='12345',
 - `amount` - Количество АР для перевода
 - `comment` - Комментарий к переводу
 - 
-###Проверка наличия проходки
+### [Проверка наличия проходки](https://github.com/sp-worlds/api-docs/blob/main/USERS.md)
 
 ```Python
 import spapi
