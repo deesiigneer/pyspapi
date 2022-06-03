@@ -6,11 +6,11 @@
 
 *Windows*
 ```commandline
-> pip install pyspapi
+pip install pyspapi
 ```
 *Linux*
 ```commandline
-$ sudo apt pip3 install pyspapi
+sudo apt pip3 install pyspapi
 ```
 
 ## Примеры
