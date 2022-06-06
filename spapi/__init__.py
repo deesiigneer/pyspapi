@@ -69,7 +69,7 @@ class Api:
     def check_user(self, discord_user_id):
         """
         Проверка на наличие проходки
-        :param discord_user_id: Стоимость покупки в АРах
+        :param discord_user_id: ID пользователя в Discord.
 
         :return: username - Ник пользователя или null, если у пользователя нет проходки на сервер.
         """
