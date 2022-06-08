@@ -1,8 +1,12 @@
 # pyspapi by deesiigneer
 #
 
+import hmac
+import hashlib
 import base64
+
 from requests import post, get
+
 
 class Error(Exception):
     pass
@@ -40,9 +44,9 @@ class Api:
         """
         Создание запроса на оплату.
 
-        :param amount: Стоимость покупки в АРах
-        :param redirecturl: URL страницы, на которую попадет пользователь после оплаты
-        :param webhookurl: URL, куда наш сервер направит запрос, чтобы оповестить ваш сервер об успешной оплате
+        :param amount: Стоимость покупки в АРах.
+        :param redirecturl: URL страницы, на которую попадет пользователь после оплаты.
+        :param webhookurl: URL, куда наш сервер направит запрос, чтобы оповестить ваш сервер об успешной оплате.
         :param data: Строка до 100 символов, сюда можно поместить любые полезные данных.
 
         :return: url - Ссылка на страницу оплаты, на которую стоит перенаправить пользователя.
@@ -52,15 +56,27 @@ class Api:
                                             'webhookUrl': webhookurl,
                                             'data': data})
 
+    def webhook_verify(self, data, header):
+        """
+        Проверяет достоверность webhook'а.
+
+        :param data : data из webhook.
+        :param  header : headers из webhook.
+
+        :return: Если header из webhook'а достоверен возвращает True, иначе False
+        """
+        hmac_data = base64.b64encode(hmac.new(self.token.encode('utf-8'), data, hashlib.sha256).digest())
+        return hmac.compare_digest(hmac_data, header.encode('utf-8'))
+
     def transaction(self, receiver, amount, comment):
         """
         Перевод АР на карту.
 
-        :param receiver : Номер карты получателя
+        :param receiver : Номер карты получателя.
 
-        :param amount: Количество АР для перевода
+        :param amount: Количество АР для перевода.
 
-        :param comment: Комментарий для перевода
+        :param comment: Комментарий для перевода.
         """
         return self._fetch('transactions', data={'receiver': receiver,
                                                  'amount': amount,
