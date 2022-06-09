@@ -1,4 +1,9 @@
 # pyspapi 
+[![PyPI](https://img.shields.io/pypi/v/pyspapi)](https://pypi.python.org/pypi/pyspapi)
+[![PyPI - Downloads](https://img.shields.io/pypi/dd/pyspapi?label=PyPi%20downloads)](https://pypi.python.org/pypi/pyspapi)
+[![GitHub all releases](https://img.shields.io/github/downloads/deesiigneer/pyspapi/total?color=34C924&label=GitHub%20downloads)](https://github.com/deesiigneer/pyspapi/)
+[![Developer discord server](https://img.shields.io/discord/850091193190973472?color=5865F2&label=dev%20discord)](https://discord.gg/sJYtYnhN)
+
 [API](https://github.com/sp-worlds/api-docs) обертка для серверов СП, написанная на Python.
 
 ## Установка
