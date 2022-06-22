@@ -105,5 +105,5 @@ print(api.check_user(discord_user_id=123456789012345678)
 
 ## Ссылки
 
-- [Discord сервер разработчика](https://discord.gg/sJYtYnhN)
+- [Discord сервер разработчика](https://discord.com/invite/d7SgXW7e)
 - [Документация API сайтов СП](https://github.com/sp-worlds/api-docs)
