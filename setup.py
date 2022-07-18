@@ -1,20 +1,42 @@
+import re
+
 from setuptools import setup
 
-from os import path
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
-    description = f.read()
+requirements = []
+with open("requirements.txt") as f:
+    requirements = f.read().splitlines()
 
-requires = ['requests==2.25.1']
+version = ""
+with open("pyspapi/__init__.py") as f:
+    match = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE)
+    if match is None or match.group(1) is None:
+        raise RuntimeError('Version is not set')
+
+    version = match.group(1)
+
+if not version:
+    raise RuntimeError("Version is not set")
+
+readme = ""
+with open("README.rst") as f:
+    readme = f.read()
+
+packages = [
+    "pyspapi"
+]
 
 setup(
     name='pyspapi',
-    version='1.0.2',
-    description='API wrapper for SP servers written in Python',
-    long_description=description,
-    long_description_content_type='text/markdown',
+    license='MIT',
     author='deesiigneer',
     author_email='xdeesiigneerx@gmail.com',
-    packages=['spapi'],
-    install_requires=requires,
+    version=version,
+    url='https://github.com/deesiigneer/pyspapi',
+    description='API wrapper for SP servers written in Python',
+    long_description=readme,
+    long_description_content_type='text/x-rst',
+    packages=packages,
+    include_package_data=True,
+    install_requires=requirements,
+    python_requires='>=3.9.0',
 )
