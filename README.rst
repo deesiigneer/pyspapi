@@ -20,13 +20,13 @@
 pyspapi
 =======
 
-`API <https://github.com/sp-worlds/api-docs>`_ обертка для серверов СП, написанная на Python.
+`API <https://github.com/sp-worlds/api-docs>`_ wrapper for SP servers written in Python.
 
 
 
-Установка
+Installation
 ==========
-**Требуется Python 3.7 или выше**
+**Requires Python 3.7 or higher**
 
 *Windows*
 
@@ -40,10 +40,10 @@ pyspapi
 
     sudo apt pip3 install pyspapi
 
-Быстрый пример
+Quick example
 =========
 
-Проверка баланса
+Checking the balance
 ~~~~
 
 .. code:: python
@@ -53,11 +53,11 @@ pyspapi
   print(pyspapi.SPAPI(card_id='card_id', token='token').balance)
 
 
-Больше примеров можно найти в каталоге `examples <https://github.com/deesiigneer/pyspapi/tree/main/examples>`_
+More examples can be found in the `examples <https://github.com/deesiigneer/pyspapi/tree/main/examples>`_
 
-Ссылки
+Links
 =======
-* `Discord сервер <https://discord.gg/VbyHaKRAaN>`_
-* `Документация pyspapi <https://pyspapi.readthedocs.io/>`_
+* `Discord server <https://discord.gg/VbyHaKRAaN>`_
+* `pyspapi documentation <https://pyspapi.readthedocs.io/>`_
 * `PyPi <https://pypi.org/project/pyspapi/>`_
-* `Документация API сайтов СП <https://github.com/sp-worlds/api-docs>`_
+* `API documentation for SP sites <https://github.com/sp-worlds/api-docs>`_
