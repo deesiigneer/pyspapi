@@ -197,24 +197,23 @@ class MojangAPI:
         except json.decoder.JSONDecodeError:
             return None
 
-    # TODO: check, why always errorMessage return invalid
-    # @classmethod
-    # def get_uuids(cls, names: List[str]) -> Dict[str, str]:
-    #     """
-    #     Получить UUID's игроков Minecraft.\n
-    #     :param names: List[str] Список с никнеймами игроков Minecraft.
-    #     :return: Dict[str, str] UUID игрока Minecraft.
-    #
-    #     """
-    #     if len(names) > 10:
-    #         names = names[:10]
-    #     response = cls.__make_request('API', 'POST', '/profiles/minecraft', data=names).json()
-    #     if not isinstance(response, list):
-    #         if response.get('error'):
-    #             raise ValueError(response['errorMessage'])
-    #         else:
-    #             raise Error(response)
-    #     return {uuids['name']: uuids['id'] for uuids in response}
+    @classmethod
+    def get_uuids(cls, names: List[str]) -> Dict[str, str]:
+        """
+        Получить UUID's игроков Minecraft.\n
+        :param names: List[str] Список с никнеймами игроков Minecraft.
+        :return: Dict[str, str] UUID игрока Minecraft.
+
+        """
+        if len(names) > 10:
+            names = names[:10]
+        response = cls.__make_request('API', 'POST', '/profiles/minecraft', data=names).json()
+        if not isinstance(response, list):
+            if response.get('error'):
+                raise ValueError(response['errorMessage'])
+            else:
+                raise _Error(response)
+        return {uuids['name']: uuids['id'] for uuids in response}
 
     @classmethod
     def get_username(cls, uuid: str) -> Optional[str]:
