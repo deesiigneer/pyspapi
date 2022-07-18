@@ -18,46 +18,44 @@
    :alt: pyspapi documentation
 
 pyspapi
-=======
+========
 
 `API <https://github.com/sp-worlds/api-docs>`_ wrapper for SP servers written in Python.
 
-
-
 Installation
-==========
-**Requires Python 3.7 or higher**
+-------------
+**Requires Python 3.9 or higher**
 
 *Windows*
+
 
 .. code:: sh
 
     pip install pyspapi
-      
-*Linux*
+
+*Linux/macOS*
 
 .. code:: sh
 
     sudo apt pip3 install pyspapi
 
 Quick example
-=========
+--------------
 
 Checking the balance
-~~~~
-
-.. code:: python
+~~~~~~~~~~~~~~~~~~~~~
+.. code:: py
 
   import pyspapi
-  
-  print(pyspapi.SPAPI(card_id='card_id', token='token').balance)
 
+  print(pyspapi.SPAPI(card_id='card_id', token='token').balance)
 
 More examples can be found in the `examples <https://github.com/deesiigneer/pyspapi/tree/main/examples>`_
 
 Links
-=======
-* `Discord server <https://discord.gg/VbyHaKRAaN>`_
-* `pyspapi documentation <https://pyspapi.readthedocs.io/>`_
-* `PyPi <https://pypi.org/project/pyspapi/>`_
-* `API documentation for SP sites <https://github.com/sp-worlds/api-docs>`_
+------
+
+- `Discord server <https://discord.gg/VbyHaKRAaN>`_
+- `pyspapi documentation <https://pyspapi.readthedocs.io/>`_
+- `PyPi <https://pypi.org/project/pyspapi/>`_
+- `API documentation for SP sites <https://github.com/sp-worlds/api-docs>`_

@@ -29,9 +29,13 @@ setup(
     name='pyspapi',
     license='MIT',
     author='deesiigneer',
-    author_email='xdeesiigneerx@gmail.com',
     version=version,
     url='https://github.com/deesiigneer/pyspapi',
+    project_urls={
+        "Documentation": "https://pyspapi.readthedocs.io/ru/latest/",
+        "GitHub": "https://github.com/deesiigneer/pyspapi",
+        "Discord": "https://discord.com/invite/VbyHaKRAaN"
+    },
     description='API wrapper for SP servers written in Python',
     long_description=readme,
     long_description_content_type='text/x-rst',
