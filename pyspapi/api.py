@@ -140,7 +140,7 @@ class SPAPI:
             'amount': amount,
             'comment': comment
         }
-        response = self.__make_request('POST', 'transactions', data=body)
+        response = self.__make_request('POST', '/transactions', data=body)
         if not response.ok:
             return None
         try:
