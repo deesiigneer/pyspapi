@@ -1,0 +1,12 @@
+[
+  {
+    "name": "latest",
+    "version": "latest",
+    "url": "https://pyspapi.readthedocs.io/en/latest/"
+  },
+  {
+    "name": "stable",
+    "version": "stable",
+    "url": "https://pyspapi.readthedocs.io/en/stable/"
+  }
+]
