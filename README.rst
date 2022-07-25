@@ -1,4 +1,4 @@
-.. image:: https://i.imgur.com/melhWhU.png
+.. image:: https://raw.githubusercontent.com/deesiigneer/pyspapi/main/assets/repo-banner.png
    :alt: pyspapi
 
 .. image:: https://img.shields.io/discord/850091193190973472?color=5865F2&label=discord
@@ -24,7 +24,7 @@ pyspapi
 
 Installation
 -------------
-**Requires Python 3.9 or higher**
+**Requires Python 3.8 or higher**
 
 *Windows*
 
