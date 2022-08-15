@@ -2,11 +2,16 @@
   {
     "name": "latest",
     "version": "latest",
-    "url": "https://pyspapi.readthedocs.io/en/latest/"
+    "url": "https://pyspapi.readthedocs.io/ru/latest/"
   },
   {
     "name": "stable",
     "version": "stable",
-    "url": "https://pyspapi.readthedocs.io/en/stable/"
+    "url": "https://pyspapi.readthedocs.io/ru/stable/"
+  },
+  {
+    "name": "v3(asyncio)",
+    "version": "v3-asyncio",
+    "url": "https://pyspapi.readthedocs.io/ru/v3-asyncio/"
   }
 ]

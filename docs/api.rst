@@ -24,51 +24,43 @@ There are two main ways to query version information.
 ``pyspapi``
 -----------
 
-``SPAPI``
+``API``
 ~~~~~
-.. autoclass:: SPAPI
+.. autoclass:: API
     :members:
 
-    .. automethod:: SPAPI.event()
+    .. automethod:: API.event()
         :decorator:
 
-    .. automethod:: SPAPI.check_user_access
+    .. automethod:: API.balance
         :decorator:
 
-    .. automethod:: SPAPI.get_user
+    .. automethod:: API.get_user
         :decorator:
 
-    .. automethod:: SPAPI.get_users
+    .. automethod:: API.get_users
         :decorator:
 
-    .. automethod:: SPAPI.payment
+    .. automethod:: API.get_uuid
         :decorator:
 
-    .. automethod:: SPAPI.transaction
+    .. automethod:: API.get_uuids
         :decorator:
 
-    .. automethod:: SPAPI.webhook_verify
+    .. automethod:: API.get_name_history
         :decorator:
 
-MojangAPI
-~~~~~
-.. autoclass:: MojangAPI
-    :members:
-
-    .. automethod:: SPAPI.event()
+    .. automethod:: API.get_profile
         :decorator:
 
-    .. automethod:: SPAPI.get_name_history
+    .. automethod:: API.payment
         :decorator:
 
-    .. automethod:: SPAPI.get_profile
+    .. automethod:: API.transaction
         :decorator:
 
-    .. automethod:: SPAPI.get_username
+    .. automethod:: API.webhook_verify
         :decorator:
 
-    .. automethod:: SPAPI.get_uuid
-        :decorator:
-
-    .. automethod:: SPAPI.get_uuids
+    .. automethod:: API.listener
         :decorator:
