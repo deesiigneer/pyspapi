@@ -32,7 +32,8 @@ setup(
     version=version,
     url='https://github.com/deesiigneer/pyspapi',
     project_urls={
-        "Documentation": "https://pyspapi.readthedocs.io/ru/latest/",
+        "pyspapi documentation": "https://pyspapi.readthedocs.io/",
+        "api documentation": "https://spworlds.readthedocs.io/",
         "GitHub": "https://github.com/deesiigneer/pyspapi",
         "Discord": "https://discord.com/invite/VbyHaKRAaN"
     },

@@ -1,98 +1,145 @@
-import json.decoder
-from sys import version_info
 import ast
+import warnings
+import asyncio
+from aiohttp import web
+from sys import version_info
 from base64 import b64encode, b64decode
 from hmac import new, compare_digest
 from hashlib import sha256
 from logging import getLogger
-from requests import get, post, Response
-from typing import Any, Dict, List, Optional
-from .models import MojangUserProfile, SPUserProfile
-import warnings
+from typing import Any, Dict, List, Optional, Union
+from .types import SPUser, MojangProfile, UsernameToUUID
+from .request import Request
+from .errors import Error
 
 log = getLogger('pyspapi')
 
 
-class _Error(Exception):
-    """
+class _BaseAPI:
 
-    """
-    def __init__(self, message: Optional[str] = None):
-        self.message = message if message else self.__class__.__doc__
-        super().__init__(self.message)
-
-
-class SPAPI:
-    """
-    class SPAPI
-    """
-    _SPWORLDS_DOMAIN_ = "https://spworlds.ru/api/public"
+    _SPWORLDS = "https://spworlds.ru/api/public"
+    _API_MOJANG = "https://api.mojang.com"
+    _SESSIONSERVER_MOJANG = "https://sessionserver.mojang.com"
 
     def __init__(self, card_id: str, token: str):
-        self.__id = card_id
-        self.__token = token
-        self.__header = {
-            'Authorization': f"Bearer {str(b64encode(str(f'{self.__id}:{self.__token}').encode('utf-8')), 'utf-8')}",
+        """
+        :param card_id:
+        :param token:
+        """
+        self._id = card_id
+        self._token = token
+
+        self._HEADER = {
+            'Authorization': f"Bearer {str(b64encode(str(f'{self._id}:{self._token}').encode('utf-8')), 'utf-8')}",
             'User-Agent': f'pyspapi (https://github.com/deesiigneer/pyspapi) '
                           f'Python {version_info.major}.{version_info.minor}.{version_info.micro}'
         }
-        self.balance = self.__check_balance()
 
-    def __make_request(self, method: str, path: str, data: Optional[dict]) -> Optional[Response]:
-        if method == 'GET':
-            response = get(self._SPWORLDS_DOMAIN_ + path, headers=self.__header)
-            return response
-        elif method == 'POST':
-            response = post(self._SPWORLDS_DOMAIN_ + path, headers=self.__header, json=data)
-            return response
+    async def webhook_verify(self, data: str, header) -> bool:
+        """
+        Проверяет достоверность webhook'а. \n
+        :param data: data из webhook.
+        :param  header: header X-Body-Hash из webhook.
+        :return: True если header из webhook'а достоверен, иначе False
+        """
+        print()
+        hmac_data = b64encode(new(self._token.encode('utf-8'), data, sha256).digest())
+        return compare_digest(hmac_data, header.encode('utf-8'))
 
-    def get_user(self, user_id: int) -> Optional[SPUserProfile]:
+    def listener(self, host: str = '127.0.0.1', port: int = 80, webhook_path: str = '/webhook/'):
+        app = web.Application()
+        async def handle(request):
+            request_data = await request.read()
+            header = request.headers.get('X-Body-Hash')
+            if header is not None:
+                if await self.webhook_verify(data=request_data, header=header) is True:
+                    web.json_response(status=202)
+                    return True
+                else:
+                    web.json_response(status=400)
+            else:
+                return web.json_response(status=404)
+        app.add_routes([web.get(webhook_path, handle)])
+        web.run_app(app, port=port, host=host)
+
+
+class API(_BaseAPI):
+    """
+    class API
+    """
+
+    async def get_user(self, user_id: int) -> Optional[SPUser]:
         """
         Получение информации об игроке SP \n
         :param user_id: ID пользователя в Discord.
-        :return: Class SPUserProfile.
-       """
-        response = self.__make_request('GET', f'/users/{str(user_id)}', data=None)
-        if not response.ok:
+        :return: Class User.
+        """
+        sp_user = await Request.get(f'{self._SPWORLDS}/users/{str(user_id)}', self._HEADER)
+        if sp_user is not None:
+            return SPUser(await Request.get(f'{self._SPWORLDS}/users/{str(user_id)}', self._HEADER))
+        else:
             return None
-        try:
-            username = response.json()['username']
-            return SPUserProfile(access=True if username is not None else False, username=username)
-        except json.decoder.JSONDecodeError:
-            return
 
-    def get_users(self, user_ids: List[int]) -> List[str]:
+    async def get_users(self, user_ids: List[int]) -> Union[SPUser, Any]:
         """
-        Получение никнеймов игроков в майнкрафте. **Не более 10**\n
+        Получение никнеймов игроков в майнкрафте. **Максимально можно указать 60 user_ids, не используйте эту функцию
+        чаще 1 раза в минуту если указали больше 60 user_ids**\n
+        https://spworlds.readthedocs.io/ru/latest/index.html#id3\n
         :param user_ids: List[int] ID пользователей в Discord.
-        :return: List[str] который содержит майнкрафт никнеймы игроков в том же порядке, который был задан,
-         None если пользователь не найден или нет проходки.
-       """
-        if len(user_ids) > 10:
-            user_ids = user_ids[:10]
-            warnings.warn('user_ids more than 10. Reduced to 10')
-        nicknames_list = []
-        for user_id in user_ids:
-            nicknames_list.append(self.get_user(user_id).username
-                                  if self.get_user(user_id) is not None else None)
-        return nicknames_list
-
-    def check_users_access(self, user_ids: List[int]) -> List[bool]:
+        :return: List[str] который содержит майнкрафт никнеймы игроков в том же порядке, который был задан, None если
+            пользователь не найден или нет проходки.
         """
-        Проверка наличия проходки у списка пользователей Discord. **Не более 10**\n
-        :param user_ids: Список(List[int]) содержащий ID пользователей в Discord.
-        :return: Список(List[bool]) в том же порядке, который был задан.True - проходка имеется, иначе False.
-        """
-        if len(user_ids) > 10:
-            user_ids = user_ids[:10]
-            warnings.warn('user_ids more than 10. Reduced to 10')
-        ids_list = []
+        if len(user_ids) > 60:
+            user_ids = user_ids[:60]
+            warnings.warn('user_ids больше чем 60. Уменьшено до 60.')
+        tasks = []
         for user_id in user_ids:
-            ids_list.append(self.get_user(user_id).access
-                            if self.get_user(user_id) is not None else None)
-        return ids_list
+            tasks.append(self.get_user(user_id))
+        return await asyncio.gather(*tasks, return_exceptions=True)
 
-    def payment(self, amount: int, redirect_url: str, webhook_url: str, data: str) -> Optional[str]:
+    async def get_uuid(self, username: str) -> Optional[UsernameToUUID]:
+        """
+        Получить UUID игрока Minecraft.\n
+        :param username: str никнейм игрока Minecraft.
+        :return: Optional[str] UUID игрока Minecraft.
+        """
+        response = await Request.get(f'{self._API_MOJANG}/users/profiles/minecraft/{username}')
+        return UsernameToUUID(await Request.get(f'{self._API_MOJANG}/users/profiles/minecraft/{username}'))
+
+    async def get_uuids(self, usernames: list[str]) -> Dict[str, str]:
+        """
+        Получить UUID's игроков Minecraft. **Не больше 10**\n
+        :param usernames: List[str] Список с никнеймами игроков Minecraft.
+        :return: Dict[str, str] UUID игроков Minecraft.
+        """
+        if len(usernames) > 10:
+            usernames = usernames[:10]
+            warnings.warn('usernames больше чем 10. Уменьшено до 10.')
+        return await Request.post(f'{self._API_MOJANG}/profiles/minecraft', payload=usernames)
+
+    async def get_name_history(self, uuid: str) -> List[Dict[str, Any]]:
+        """
+        История никнеймов в Minecraft.\n
+        :param uuid: UUID игрока Minecraft.
+        :return: List[Dict[str, Any]] который содержит name и changed_to_at
+        """
+        requests = await Request.get(f"{self._API_MOJANG}/user/profiles/{uuid}/names")
+
+        name_data = []
+        for data in requests:
+            name_data_dict = {"name": data["name"]}
+            if data.get("changedToAt"):
+                name_data_dict["changed_to_at"] = data["changedToAt"]
+            else:
+                name_data_dict["changed_to_at"] = 0
+            name_data.append(name_data_dict)
+        return name_data
+
+    async def get_profile(self, uuid: str) -> MojangProfile:
+        response = await Request.get(f'{self._SESSIONSERVER_MOJANG}/session/minecraft/profile/{uuid}')
+        return MojangProfile(ast.literal_eval(b64decode(response["properties"][0]["value"]).decode()))
+
+    async def payment(self, amount: int, redirect_url: str, webhook_url: str, data: str) -> Optional[str]:
         """
         Создание ссылки для оплаты.\n
         :param amount: Стоимость покупки в АРах.
@@ -102,32 +149,16 @@ class SPAPI:
         :return: Ссылку на страницу оплаты, на которую стоит перенаправить пользователя.
         """
         if len(data) > 100:
-            raise _Error('В data больше 100 символов')
-        body = {
-            'amount': amount,
-            'redirectUrl': redirect_url,
-            'webhookUrl': webhook_url,
-            'data': data
-        }
-        response = self.__make_request('POST', '/payment', data=body)
-        if not response.ok:
-            return None
-        try:
-            return response.json()['url']
-        except json.decoder.JSONDecodeError:
-            return None
+            raise Error('В data больше 100 символов')
+        return await Request.post(f'{self._SPWORLDS}/payment',
+                                  payload={
+                                      'amount': amount,
+                                      'redirectUrl': redirect_url,
+                                      'webhookUrl': webhook_url,
+                                      'data': data},
+                                  headers=self._HEADER)
 
-    def webhook_verify(self, data: str, header) -> bool:
-        """
-        Проверяет достоверность webhook'а. \n
-        :param data: data из webhook.
-        :param  header: header X-Body-Hash из webhook.
-        :return: True если header из webhook'а достоверен, иначе False
-        """
-        hmac_data = b64encode(new(self.__token.encode('utf-8'), data, sha256).digest())
-        return compare_digest(hmac_data, header.encode('utf-8'))
-
-    def transaction(self, receiver: int, amount: int, comment: str) -> Optional[str]:
+    async def transaction(self, receiver: int, amount: int, comment: str) -> Optional[str]:
         """
         Перевод АР на карту. \n
         :param receiver: Номер карты получателя.
@@ -135,134 +166,17 @@ class SPAPI:
         :param comment: Комментарий для перевода.
         :return: True если перевод успешен, иначе False.
         """
-        body = {
-            'receiver': receiver,
-            'amount': amount,
-            'comment': comment
-        }
-        response = self.__make_request('POST', '/transactions', data=body)
-        if not response.ok:
-            return None
-        try:
-            return 'Success' if response.status_code == 200 else 'Fail'
-        except json.decoder.JSONDecodeError:
-            return None
+        return 'Удачно' if await Request.post(f'{self._SPWORLDS}/transactions',
+                                                 payload={'receiver': receiver,
+                                                          'amount': amount,
+                                                          'comment': comment},
+                                                 headers=self._HEADER) else 'Что-то пошло не так...'
 
-    def __check_balance(self) -> Optional[int]:
+    @property
+    async def balance(self) -> Optional[int]:
         """
         Проверка баланса карты \n
         :return: Количество АР на карте.
         """
-        response = self.__make_request('GET', '/card', None)
-        if not response.ok:
-            return None
-        try:
-            return response.json()['balance']
-        except json.decoder.JSONDecodeError:
-            return None
-
-
-class MojangAPI:
-    """
-    class MojangAPI
-    """
-
-    _API_DOMAIN_ = "https://api.mojang.com"
-    _SESSIONSERVER_DOMAIN_ = "https://sessionserver.mojang.com"
-
-    @classmethod
-    def __make_request(cls, server: str, method: str, path: str, data=Optional[dict]) -> Optional[Response]:
-        if server == 'API':
-            if method == 'GET':
-                return get(cls._API_DOMAIN_ + path)
-            elif method == 'POST':
-                return post(cls._API_DOMAIN_ + path, json=data)
-        elif server == 'SESSION':
-            if method == 'GET':
-                return get(cls._SESSIONSERVER_DOMAIN_ + path)
-
-    @classmethod
-    def get_uuid(cls, username: str) -> Optional[str]:
-        """
-        Получить UUID игрока Minecraft.\n
-        :param username: str никнейм игрока Minecraft.
-        :return: Optional[str] UUID игрока Minecraft.
-        """
-        response = cls.__make_request('API', 'GET', f'/users/profiles/minecraft/{username}')
-        if not response.ok:
-            return None
-
-        try:
-            return response.json()['id']
-        except json.decoder.JSONDecodeError:
-            return None
-
-    @classmethod
-    def get_uuids(cls, names: List[str]) -> Dict[str, str]:
-        """
-        Получить UUID's игроков Minecraft.\n
-        :param names: List[str] Список с никнеймами игроков Minecraft.
-        :return: Dict[str, str] UUID игрока Minecraft.
-
-        """
-        if len(names) > 10:
-            names = names[:10]
-        response = cls.__make_request('API', 'POST', '/profiles/minecraft', data=names).json()
-        if not isinstance(response, list):
-            if response.get('error'):
-                raise ValueError(response['errorMessage'])
-            else:
-                raise _Error(response)
-        return {uuids['name']: uuids['id'] for uuids in response}
-
-    @classmethod
-    def get_username(cls, uuid: str) -> Optional[str]:
-        """
-        Получить никнейм игрока.\n
-        :param uuid: UUID игрока Minecraft.
-        :return: Optional[str] в виде никнейма игрока Minecraft.
-        """
-        response = cls.__make_request('SESSION', 'GET', f'/session/minecraft/profile/{uuid}', None)
-        if not response.ok:
-            return None
-        try:
-            return response.json()["name"]
-        except json.decoder.JSONDecodeError:
-            return None
-
-    @classmethod
-    def get_profile(cls, uuid: str) -> Optional[MojangUserProfile]:
-        """
-        Профиль игрока Minecraft.\n
-        :param uuid: UUID игрока Minecraft.
-        :return: Class MojangUserProfile
-        """
-        response = cls.__make_request('SESSION', 'GET', f'/session/minecraft/profile/{uuid}')
-        if not response.ok:
-            return None
-        try:
-            value = response.json()["properties"][0]["value"]
-        except (KeyError, json.decoder.JSONDecodeError):
-            return None
-        user_profile = ast.literal_eval(b64decode(value).decode())
-        return MojangUserProfile(user_profile)
-
-    @classmethod
-    def get_name_history(cls, uuid: str) -> List[Dict[str, Any]]:
-        """
-        История никнеймов в Minecraft.\n
-        :param uuid: UUID игрока Minecraft.
-        :return: List[Dict[str, Any]] который содержит name и changed_to_at
-        """
-        requests = cls.__make_request('API', 'GET', f"/user/profiles/{uuid}/names")
-        name_history = requests.json()
-
-        name_data = []
-        for data in name_history:
-            name_data_dict = {"name": data["name"]}
-            if data.get("changedToAt"):
-                name_data_dict["changed_to_at"] = data["changedToAt"]
-            else:
-                name_data_dict["changed_to_at"] = 0
-            name_data.append(name_data_dict)
-        return name_data
+        balance = await Request.get(f'{self._SPWORLDS}/card', headers=self._HEADER)
+        return balance['balance']

@@ -48,7 +48,7 @@ Checking the balance
 
   import pyspapi
 
-  print(pyspapi.SPAPI(card_id='card_id', token='token').balance)
+  print(await pyspapi.API(card_id='card_id', token='token').balance)
 
 More examples can be found in the `examples <https://github.com/deesiigneer/pyspapi/tree/main/examples>`_
 
@@ -57,5 +57,6 @@ Links
 
 - `Discord server <https://discord.gg/VbyHaKRAaN>`_
 - `pyspapi documentation <https://pyspapi.readthedocs.io/>`_
+- `API documentation <https://spworlds.readthedocs.io>`_
 - `PyPi <https://pypi.org/project/pyspapi/>`_
 - `API documentation for SP sites <https://github.com/sp-worlds/api-docs>`_

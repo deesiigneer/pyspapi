@@ -1,3 +1,4 @@
-from .api import *
+from .api import API
+from .types import SPUser, MojangProfile, Skin, UsernameToUUID
 
-__version__ = "2.1.2"
+__version__ = "3.0.0a0"
