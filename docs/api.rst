@@ -58,9 +58,3 @@ There are two main ways to query version information.
 
     .. automethod:: API.transaction
         :decorator:
-
-    .. automethod:: API.webhook_verify
-        :decorator:
-
-    .. automethod:: API.listener
-        :decorator:
