@@ -1,4 +1,5 @@
 from re import search, MULTILINE
+import os
 
 project = 'pyspapi'
 copyright = '2022, deesiigneer'
@@ -28,6 +29,9 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
     'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
 }
+json_url = "https://pyspapi.readthedocs.io/ru/v3-asyncio/_static/switcher.json"
+version_match = os.environ.get("READTHEDOCS_VERSION")
+
 intersphinx_disabled_domains = ['std']
 language = None
 locale_dirs = ["locale/"]
@@ -67,10 +71,10 @@ html_theme_options = {
     "show_toc_level": 1,
     "navbar_start": ["navbar-logo", "version-switcher"],
     "switcher": {
-        "json_url": "https://pyspapi.readthedocs.io/en/latest/_static/switcher.json",
-        "version_match": "latest"
+        "json_url": json_url,
+        "version_match": version_match
     },
     "navigation_with_keys": True,
 }
-#html_css_files = ["custom.css"]
+html_css_files = ["custom.css"]
 
