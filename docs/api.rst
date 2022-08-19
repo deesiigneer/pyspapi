@@ -26,7 +26,7 @@ There are two main ways to query version information.
 
 ``API``
 ~~~~~
-.. autoclass:: API
+.. autoclass:: API()
     :members:
 
     .. automethod:: API.event()
