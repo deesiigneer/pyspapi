@@ -37,7 +37,7 @@ Installation
 
 .. code:: sh
 
-    sudo apt pip3 install pyspapi
+    pip3 install pyspapi
 
 Quick example
 --------------
