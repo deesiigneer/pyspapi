@@ -1,17 +1,17 @@
-.. image:: https://raw.githubusercontent.com/deesiigneer/pyspapi/main/assets/repo-banner.png
+.. image:: https://raw.githubusercontent.com/kvertisp/asyncpyspapi/main/assets/repo-banner.png
    :alt: pyspapi
 
 .. image:: https://img.shields.io/discord/850091193190973472?color=5865F2&label=discord
    :target: https://discord.gg/VbyHaKRAaN
    :alt: Discord server invite
 .. image:: https://img.shields.io/github/v/release/deesiigneer/pyspapi?include_prereleases&label=github%20release
-   :target: https://github.com/deesiigneer/pyspapi/
+   :target: https://github.com/kvertisp/asyncpyspapi/
    :alt: GitHub release (latest by date including pre-releases)
-.. image:: https://img.shields.io/pypi/v/pyspapi.svg
-   :target: https://pypi.org/project/pyspapi/
+.. image:: https://img.shields.io/pypi/v/asyncpyspapi.svg
+   :target: https://pypi.org/project/asyncpyspapi/
    :alt: PyPI downloads info
-.. image:: https://img.shields.io/pypi/dm/pyspapi?color=informational&label=pypi%20downloads
-   :target: https://pypi.org/project/pyspapi/
+.. image:: https://img.shields.io/pypi/dm/asyncpyspapi?color=informational&label=pypi%20downloads
+   :target: https://pypi.org/project/asyncpyspapi/
    :alt: PyPI version info
 .. image:: https://img.shields.io/readthedocs/pyspapi
    :target: https://pyspapi.readthedocs.io/
@@ -31,13 +31,13 @@ Installation
 
 .. code:: sh
 
-    pip install pyspapi
+    pip install asyncpyspapi
 
 *Linux/macOS*
 
 .. code:: sh
 
-    pip3 install pyspapi
+    pip3 install asyncpyspapi
 
 Quick example
 --------------
@@ -46,16 +46,16 @@ Checking the balance
 ~~~~~~~~~~~~~~~~~~~~~
 .. code:: py
 
-  import pyspapi
+  import asyncpyspapi
 
-  print(pyspapi.SPAPI(card_id='card_id', token='token').balance)
-
-More examples can be found in the `examples <https://github.com/deesiigneer/pyspapi/tree/main/examples>`_
+  client = asyncpyspapi.SPAPI(card_id='card_id', token='token')
+  balance = await client.get_balance()
+  print("Balance:", balance)
 
 Links
 ------
 
-- `Discord server <https://discord.gg/VbyHaKRAaN>`_
+- `pyspapi discord server <https://discord.gg/VbyHaKRAaN>`_
 - `pyspapi documentation <https://pyspapi.readthedocs.io/>`_
-- `PyPi <https://pypi.org/project/pyspapi/>`_
+- `PyPi <https://pypi.org/project/asyncpyspapi/>`_
 - `API documentation for SP sites <https://github.com/sp-worlds/api-docs>`_
