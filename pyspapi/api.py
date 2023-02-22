@@ -9,6 +9,7 @@ from httpx import request, Response
 from typing import Any, Dict, List, Optional
 from .models import MojangUserProfile, SPUserProfile
 import warnings
+import asyncio
 
 log = getLogger('pyspapi')
 
@@ -36,7 +37,7 @@ class SPAPI:
             'User-Agent': f'pyspapi (https://github.com/deesiigneer/pyspapi) '
                           f'Python {version_info.major}.{version_info.minor}.{version_info.micro}'
         }
-        self.balance = self.__check_balance()
+        self.balance = asyncio.run(self.__check_balance())
 
     async def __make_request(self, method: str, path: str, data: Optional[dict]) -> Optional[Response]:
         response = await request(method, self._SPWORLDS_DOMAIN_ + path, headers=self.__header)
