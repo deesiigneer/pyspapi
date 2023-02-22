@@ -38,7 +38,6 @@ class SPAPI:
             'User-Agent': f'pyspapi (https://github.com/deesiigneer/pyspapi) '
                           f'Python {version_info.major}.{version_info.minor}.{version_info.micro}'
         }
-        self.balance = asyncio.run(self.__check_balance())
 
     async def __make_request(self, method: str, path: str, data: Optional[dict]) -> Optional[Response]:
         
@@ -147,7 +146,7 @@ class SPAPI:
         except json.decoder.JSONDecodeError:
             return None
 
-    async def __check_balance(self) -> Optional[int]:
+    async def check_balance(self) -> Optional[int]:
         """
         Проверка баланса карты \n
         :return: Количество АР на карте.
@@ -168,12 +167,10 @@ class MojangAPI:
 
     _API_DOMAIN_ = "https://api.mojang.com"
     _SESSIONSERVER_DOMAIN_ = "https://sessionserver.mojang.com"
-
-    def __init__(cls) -> None:
-        cls.client = AsyncClient()
+    client = AsyncClient()
 
     @classmethod
-    async def __make_request(cls, server: str, method: str, path: str, data=Optional[dict]) -> Optional[Response]:
+    async def __make_request(cls, server: str, method: str, path: str, data: Optional[dict] = None) -> Optional[Response]:
         if server == 'API':
             return await cls.client.request(method, cls._API_DOMAIN_ + path, json=data)
         elif server == 'SESSION':
@@ -205,7 +202,7 @@ class MojangAPI:
         """
         if len(names) > 10:
             names = names[:10]
-        response = await cls.__make_request('API', 'POST', '/profiles/minecraft', data=names).json()
+        response = await cls.__make_request('API', 'POST', '/profiles/minecraft', data=names)
         if not isinstance(response, list):
             if response.get('error'):
                 raise ValueError(response['errorMessage'])
