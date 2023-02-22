@@ -40,7 +40,7 @@ class SPAPI:
         self.balance = asyncio.run(self.__check_balance())
 
     async def __make_request(self, method: str, path: str, data: Optional[dict]) -> Optional[Response]:
-        response = await request(method, self._SPWORLDS_DOMAIN_ + path, headers=self.__header)
+        response = await request(method, self._SPWORLDS_DOMAIN_ + path, json=data, headers=self.__header)
         return response
 
     async def get_user(self, user_id: int) -> Optional[SPUserProfile]:
@@ -151,7 +151,7 @@ class SPAPI:
         :return: Количество АР на карте.
         """
         response = await self.__make_request('GET', '/card', None)
-        if not response.ok:
+        if not response.is_success:
             return None
         try:
             return response.json()['balance']
