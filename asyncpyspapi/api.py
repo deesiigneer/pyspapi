@@ -5,7 +5,7 @@ from base64 import b64encode, b64decode
 from hmac import new, compare_digest
 from hashlib import sha256
 from logging import getLogger
-from httpx import request, Response
+from httpx import Response, AsyncClient
 from typing import Any, Dict, List, Optional
 from .models import MojangUserProfile, SPUserProfile
 import warnings
@@ -32,6 +32,7 @@ class SPAPI:
     def __init__(self, card_id: str, token: str):
         self.__id = card_id
         self.__token = token
+        self.client = AsyncClient()
         self.__header = {
             'Authorization': f"Bearer {str(b64encode(str(f'{self.__id}:{self.__token}').encode('utf-8')), 'utf-8')}",
             'User-Agent': f'pyspapi (https://github.com/deesiigneer/pyspapi) '
@@ -40,7 +41,8 @@ class SPAPI:
         self.balance = asyncio.run(self.__check_balance())
 
     async def __make_request(self, method: str, path: str, data: Optional[dict]) -> Optional[Response]:
-        response = await request(method, self._SPWORLDS_DOMAIN_ + path, json=data, headers=self.__header)
+        
+        response = await self.client.request(method, self._SPWORLDS_DOMAIN_ + path, json=data, headers=self.__header)
         return response
 
     async def get_user(self, user_id: int) -> Optional[SPUserProfile]:
@@ -167,12 +169,15 @@ class MojangAPI:
     _API_DOMAIN_ = "https://api.mojang.com"
     _SESSIONSERVER_DOMAIN_ = "https://sessionserver.mojang.com"
 
+    def __init__(cls) -> None:
+        cls.client = AsyncClient()
+
     @classmethod
     async def __make_request(cls, server: str, method: str, path: str, data=Optional[dict]) -> Optional[Response]:
         if server == 'API':
-            return await request(method, cls._API_DOMAIN_ + path, json=data)
+            return await cls.client.request(method, cls._API_DOMAIN_ + path, json=data)
         elif server == 'SESSION':
-            return await request(method, cls._SESSIONSERVER_DOMAIN_ + path, json=data)
+            return await cls.client.request(method, cls._SESSIONSERVER_DOMAIN_ + path, json=data)
 
     @classmethod
     async def get_uuid(cls, username: str) -> Optional[str]:
