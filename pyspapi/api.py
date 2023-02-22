@@ -5,7 +5,7 @@ from base64 import b64encode, b64decode
 from hmac import new, compare_digest
 from hashlib import sha256
 from logging import getLogger
-from requests import get, post, Response
+from httpx import request, Response
 from typing import Any, Dict, List, Optional
 from .models import MojangUserProfile, SPUserProfile
 import warnings
@@ -38,22 +38,18 @@ class SPAPI:
         }
         self.balance = self.__check_balance()
 
-    def __make_request(self, method: str, path: str, data: Optional[dict]) -> Optional[Response]:
-        if method == 'GET':
-            response = get(self._SPWORLDS_DOMAIN_ + path, headers=self.__header)
-            return response
-        elif method == 'POST':
-            response = post(self._SPWORLDS_DOMAIN_ + path, headers=self.__header, json=data)
-            return response
+    async def __make_request(self, method: str, path: str, data: Optional[dict]) -> Optional[Response]:
+        response = await request(method, self._SPWORLDS_DOMAIN_ + path, headers=self.__header)
+        return response
 
-    def get_user(self, user_id: int) -> Optional[SPUserProfile]:
+    async def get_user(self, user_id: int) -> Optional[SPUserProfile]:
         """
         Получение информации об игроке SP \n
         :param user_id: ID пользователя в Discord.
         :return: Class SPUserProfile.
        """
-        response = self.__make_request('GET', f'/users/{str(user_id)}', data=None)
-        if not response.ok:
+        response = await self.__make_request('GET', f'/users/{str(user_id)}', data=None)
+        if not response.is_success:
             return None
         try:
             username = response.json()['username']
@@ -61,7 +57,7 @@ class SPAPI:
         except json.decoder.JSONDecodeError:
             return
 
-    def get_users(self, user_ids: List[int]) -> List[str]:
+    async def get_users(self, user_ids: List[int]) -> List[str]:
         """
         Получение никнеймов игроков в майнкрафте. **Не более 10**\n
         :param user_ids: List[int] ID пользователей в Discord.
@@ -73,11 +69,11 @@ class SPAPI:
             warnings.warn('user_ids more than 10. Reduced to 10')
         nicknames_list = []
         for user_id in user_ids:
-            nicknames_list.append(self.get_user(user_id).username
-                                  if self.get_user(user_id) is not None else None)
+            user = await self.get_user(user_id)
+            nicknames_list.append(user.username if user else None)
         return nicknames_list
 
-    def check_users_access(self, user_ids: List[int]) -> List[bool]:
+    async def check_users_access(self, user_ids: List[int]) -> List[bool]:
         """
         Проверка наличия проходки у списка пользователей Discord. **Не более 10**\n
         :param user_ids: Список(List[int]) содержащий ID пользователей в Discord.
@@ -88,11 +84,11 @@ class SPAPI:
             warnings.warn('user_ids more than 10. Reduced to 10')
         ids_list = []
         for user_id in user_ids:
-            ids_list.append(self.get_user(user_id).access
-                            if self.get_user(user_id) is not None else None)
+            user = await self.get_user(user_id)
+            ids_list.append(user.access if user else None)
         return ids_list
 
-    def payment(self, amount: int, redirect_url: str, webhook_url: str, data: str) -> Optional[str]:
+    async def payment(self, amount: int, redirect_url: str, webhook_url: str, data: str) -> Optional[str]:
         """
         Создание ссылки для оплаты.\n
         :param amount: Стоимость покупки в АРах.
@@ -109,15 +105,15 @@ class SPAPI:
             'webhookUrl': webhook_url,
             'data': data
         }
-        response = self.__make_request('POST', '/payment', data=body)
-        if not response.ok:
+        response = await self.__make_request('POST', '/payment', data=body)
+        if not response.is_success:
             return None
         try:
             return response.json()['url']
         except json.decoder.JSONDecodeError:
             return None
 
-    def webhook_verify(self, data: str, header) -> bool:
+    async def webhook_verify(self, data: str, header) -> bool:
         """
         Проверяет достоверность webhook'а. \n
         :param data: data из webhook.
@@ -127,7 +123,7 @@ class SPAPI:
         hmac_data = b64encode(new(self.__token.encode('utf-8'), data, sha256).digest())
         return compare_digest(hmac_data, header.encode('utf-8'))
 
-    def transaction(self, receiver: int, amount: int, comment: str) -> Optional[str]:
+    async def transaction(self, receiver: int, amount: int, comment: str) -> Optional[str]:
         """
         Перевод АР на карту. \n
         :param receiver: Номер карты получателя.
@@ -140,20 +136,20 @@ class SPAPI:
             'amount': amount,
             'comment': comment
         }
-        response = self.__make_request('POST', '/transactions', data=body)
-        if not response.ok:
+        response = await self.__make_request('POST', '/transactions', data=body)
+        if not response.is_success:
             return None
         try:
             return 'Success' if response.status_code == 200 else 'Fail'
         except json.decoder.JSONDecodeError:
             return None
 
-    def __check_balance(self) -> Optional[int]:
+    async def __check_balance(self) -> Optional[int]:
         """
         Проверка баланса карты \n
         :return: Количество АР на карте.
         """
-        response = self.__make_request('GET', '/card', None)
+        response = await self.__make_request('GET', '/card', None)
         if not response.ok:
             return None
         try:
@@ -171,25 +167,21 @@ class MojangAPI:
     _SESSIONSERVER_DOMAIN_ = "https://sessionserver.mojang.com"
 
     @classmethod
-    def __make_request(cls, server: str, method: str, path: str, data=Optional[dict]) -> Optional[Response]:
+    async def __make_request(cls, server: str, method: str, path: str, data=Optional[dict]) -> Optional[Response]:
         if server == 'API':
-            if method == 'GET':
-                return get(cls._API_DOMAIN_ + path)
-            elif method == 'POST':
-                return post(cls._API_DOMAIN_ + path, json=data)
+            return await request(method, cls._API_DOMAIN_ + path, json=data)
         elif server == 'SESSION':
-            if method == 'GET':
-                return get(cls._SESSIONSERVER_DOMAIN_ + path)
+            return await request(method, cls._SESSIONSERVER_DOMAIN_ + path, json=data)
 
     @classmethod
-    def get_uuid(cls, username: str) -> Optional[str]:
+    async def get_uuid(cls, username: str) -> Optional[str]:
         """
         Получить UUID игрока Minecraft.\n
         :param username: str никнейм игрока Minecraft.
         :return: Optional[str] UUID игрока Minecraft.
         """
-        response = cls.__make_request('API', 'GET', f'/users/profiles/minecraft/{username}')
-        if not response.ok:
+        response = await cls.__make_request('API', 'GET', f'/users/profiles/minecraft/{username}')
+        if not response.is_success:
             return None
 
         try:
@@ -198,7 +190,7 @@ class MojangAPI:
             return None
 
     @classmethod
-    def get_uuids(cls, names: List[str]) -> Dict[str, str]:
+    async def get_uuids(cls, names: List[str]) -> Dict[str, str]:
         """
         Получить UUID's игроков Minecraft.\n
         :param names: List[str] Список с никнеймами игроков Minecraft.
@@ -207,7 +199,7 @@ class MojangAPI:
         """
         if len(names) > 10:
             names = names[:10]
-        response = cls.__make_request('API', 'POST', '/profiles/minecraft', data=names).json()
+        response = await cls.__make_request('API', 'POST', '/profiles/minecraft', data=names).json()
         if not isinstance(response, list):
             if response.get('error'):
                 raise ValueError(response['errorMessage'])
@@ -216,14 +208,14 @@ class MojangAPI:
         return {uuids['name']: uuids['id'] for uuids in response}
 
     @classmethod
-    def get_username(cls, uuid: str) -> Optional[str]:
+    async def get_username(cls, uuid: str) -> Optional[str]:
         """
         Получить никнейм игрока.\n
         :param uuid: UUID игрока Minecraft.
         :return: Optional[str] в виде никнейма игрока Minecraft.
         """
-        response = cls.__make_request('SESSION', 'GET', f'/session/minecraft/profile/{uuid}', None)
-        if not response.ok:
+        response = await cls.__make_request('SESSION', 'GET', f'/session/minecraft/profile/{uuid}', None)
+        if not response.is_success:
             return None
         try:
             return response.json()["name"]
@@ -231,14 +223,14 @@ class MojangAPI:
             return None
 
     @classmethod
-    def get_profile(cls, uuid: str) -> Optional[MojangUserProfile]:
+    async def get_profile(cls, uuid: str) -> Optional[MojangUserProfile]:
         """
         Профиль игрока Minecraft.\n
         :param uuid: UUID игрока Minecraft.
         :return: Class MojangUserProfile
         """
-        response = cls.__make_request('SESSION', 'GET', f'/session/minecraft/profile/{uuid}')
-        if not response.ok:
+        response = await cls.__make_request('SESSION', 'GET', f'/session/minecraft/profile/{uuid}')
+        if not response.is_success:
             return None
         try:
             value = response.json()["properties"][0]["value"]
@@ -248,13 +240,13 @@ class MojangAPI:
         return MojangUserProfile(user_profile)
 
     @classmethod
-    def get_name_history(cls, uuid: str) -> List[Dict[str, Any]]:
+    async def get_name_history(cls, uuid: str) -> List[Dict[str, Any]]:
         """
         История никнеймов в Minecraft.\n
         :param uuid: UUID игрока Minecraft.
         :return: List[Dict[str, Any]] который содержит name и changed_to_at
         """
-        requests = cls.__make_request('API', 'GET', f"/user/profiles/{uuid}/names")
+        requests = await cls.__make_request('API', 'GET', f"/user/profiles/{uuid}/names")
         name_history = requests.json()
 
         name_data = []
