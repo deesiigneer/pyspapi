@@ -7,7 +7,7 @@ with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
 version = ""
-with open("pyspapi/__init__.py") as f:
+with open("asyncpyspapi/__init__.py") as f:
     match = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE)
     if match is None or match.group(1) is None:
         raise RuntimeError('Version is not set')
@@ -22,18 +22,18 @@ with open("README.rst") as f:
     readme = f.read()
 
 packages = [
-    "pyspapi"
+    "asyncpyspapi"
 ]
 
 setup(
-    name='pyspapi',
+    name='asyncpyspapi',
     license='MIT',
-    author='deesiigneer',
+    author='deesiigneer & kvertsp',
     version=version,
-    url='https://github.com/deesiigneer/pyspapi',
+    url='https://github.com/kvertisp/asyncpyspapi',
     project_urls={
         "Documentation": "https://pyspapi.readthedocs.io/ru/latest/",
-        "GitHub": "https://github.com/deesiigneer/pyspapi",
+        "GitHub": "https://github.com/kvertisp/asyncpyspapi",
         "Discord": "https://discord.com/invite/VbyHaKRAaN"
     },
     description='API wrapper for SP servers written in Python',

@@ -17,7 +17,7 @@
    :target: https://pyspapi.readthedocs.io/
    :alt: pyspapi documentation
 
-pyspapi
+asyncpyspapi
 ========
 
 `API <https://github.com/sp-worlds/api-docs>`_ wrapper for SP servers written in Python.
