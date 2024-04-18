@@ -2,7 +2,10 @@ version: 2
 formats: []
 
 build:
-  image: latest
+  os: ubuntu-lts-latest
+  tools:
+    python: '3.8'
+
 
 sphinx:
   configuration: docs/conf.py
@@ -10,7 +13,6 @@ sphinx:
   builder: html
 
 python:
-  version: "3.8"
   install:
     - method: pip
       path: .

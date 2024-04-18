@@ -46,9 +46,17 @@ Checking the balance
 ~~~~~~~~~~~~~~~~~~~~~
 .. code:: py
 
-  import pyspapi
+    from pyspapi import SPAPI
+    from asyncio import get_event_loop
 
-  print(pyspapi.SPAPI(card_id='card_id', token='token').balance)
+    spapi = SPAPI(card_id='CARD_ID', token='TOKEN')
+
+
+    async def main():
+        print(await spapi.balance)
+
+    loop = get_event_loop()
+    loop.run_until_complete(main())
 
 More examples can be found in the `examples <https://github.com/deesiigneer/pyspapi/tree/main/examples>`_
 

@@ -10,7 +10,7 @@ Quickstart
 This page gives a brief introduction to the library.
 
 Checking balance
--------------
+----------------
 
 Let's output the amount of money remaining in the card account to the console.
 
@@ -18,9 +18,17 @@ It looks something like this:
 
 .. code-block:: python
 
-  import pyspapi
+    from pyspapi import SPAPI
+    from asyncio import get_event_loop
 
-  print(pyspapi.SPAPI(card_id='card_id', token='token').balance)
+    spapi = SPAPI(card_id='CARD_ID', token='TOKEN')
+
+
+    async def main():
+        print(await spapi.balance)
+
+    loop = get_event_loop()
+    loop.run_until_complete(main())
 
 Make sure not to name it ``pyspapi`` as that'll conflict with the library.
 
