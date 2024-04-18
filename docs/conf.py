@@ -1,5 +1,7 @@
 from re import search, MULTILINE
 import os
+import sys
+
 
 project = 'pyspapi'
 copyright = '2022, deesiigneer'
@@ -16,6 +18,9 @@ with open("../pyspapi/__init__.py") as f:
 release = version
 
 # -- General configuration
+
+sys.path.insert(0, os.path.abspath(".."))
+
 
 extensions = [
     'sphinx.ext.duration',
@@ -37,7 +42,7 @@ version_match = os.environ.get("READTHEDOCS_VERSION")
 json_url = f"https://pyspapi.readthedocs.io/ru/{version_match}/_static/switcher.json"
 
 intersphinx_disabled_domains = ['std']
-language = None
+language = 'en'
 locale_dirs = ["locale/"]
 exclude_patterns = []
 html_static_path = ["_static"]
@@ -73,12 +78,7 @@ html_theme_options = {
     ],
     "header_links_before_dropdown": 4,
     "show_toc_level": 1,
-    "navbar_start": ["navbar-logo", "version-switcher"],
-    "switcher": {
-        "json_url": json_url,
-        "version_match": version_match
-    },
+    "navbar_start": ["navbar-logo"],
     "navigation_with_keys": True,
 }
 html_css_files = ["custom.css"]
-
