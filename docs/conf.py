@@ -25,6 +25,9 @@ extensions = [
     'sphinx.ext.intersphinx',
 ]
 
+autodoc_member_order = "bysource"
+autodoc_typehinta = "none"
+
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
     'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
