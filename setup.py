@@ -1,6 +1,6 @@
 import re
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 requirements = []
 with open("requirements.txt") as f:
@@ -21,10 +21,6 @@ readme = ""
 with open("README.rst") as f:
     readme = f.read()
 
-packages = [
-    "pyspapi"
-]
-
 setup(
     name='pyspapi',
     license='MIT',
@@ -39,7 +35,8 @@ setup(
     description='API wrapper for SP servers written in Python',
     long_description=readme,
     long_description_content_type='text/x-rst',
-    packages=packages,
+    packages=find_packages(),
+    package_data={'pyspapi': ['types/*', 'api/*']},  # Включаем дополнительные файлы и папки
     include_package_data=True,
     install_requires=requirements,
     python_requires='>=3.8.0',
