@@ -1,4 +1,6 @@
 from .spworlds import *
+from .types import *
+from .api import *
 
 
 __author__ = 'deesiigneer'
