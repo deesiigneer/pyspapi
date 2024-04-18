@@ -88,7 +88,7 @@ class SPAPI(APISession):
         :return: Объект Account, представляющий аккаунт текущего пользователя.
         :rtype: Account
         """
-        me = await self.__get('account/me')
+        me = await self.__get('accounts/me')
         return Account(
                 account_id=me['id'],
                 username=me['username'],
