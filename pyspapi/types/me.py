@@ -3,7 +3,7 @@ class City:
         self,
         role,
         created_at,
-        id,
+        city_id,
         name,
         x_cord,
         z_cord,
@@ -13,7 +13,7 @@ class City:
     ):
         self._role = role
         self._created_at = created_at
-        self._id = id
+        self._city_id = city_id
         self._name = name 
         self._x_cord = x_cord
         self._z_cord = z_cord
@@ -30,8 +30,8 @@ class City:
         return self._created_at
 
     @property
-    def id(self):
-        return self._id
+    def city_id(self):
+        return self._city_id
 
     @property
     def x_cord(self):
@@ -54,7 +54,7 @@ class City:
         return self._lane
 
     def __repr__(self):
-        return f"City(role={self.role}, created_at={self.created_at}, id={self.id}, x_cord={self.x_cord}, z_cord={self.z_cord}, nether_x_cord={self.nether_x_cord}, nether_z_cord={self.nether_z_cord}, lane={self.lane})"
+        return f"City(role={self.role}, created_at={self.created_at}, м={self.city_id}, x_cord={self.x_cord}, z_cord={self.z_cord}, nether_x_cord={self.nether_x_cord}, nether_z_cord={self.nether_z_cord}, lane={self.lane})"
 
 
 class Cards:
