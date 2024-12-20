@@ -1,31 +1,37 @@
 class City:
     def __init__(
         self,
-        city_id=None,
-        name=None,
-        description=None,
-        x_cord=None,
-        z_cord=None,
-        is_mayor=None,
+        role,
+        created_at,
+        id,
+        name,
+        x_cord,
+        z_cord,
+        nether_x_cord,
+        nether_z_cord,
+        lane,
     ):
-        self._id = city_id
-        self._name = name
-        self._description = description
+        self._role = role
+        self._created_at = created_at
+        self._id = id
+        self._name = name 
         self._x_cord = x_cord
         self._z_cord = z_cord
-        self._isMayor = is_mayor
+        self._nether_x_cord = nether_x_cord
+        self._nether_z_cord = nether_z_cord
+        self._lane = lane
+
+    @property
+    def role(self):
+        return self._role
+
+    @property
+    def created_at(self):
+        return self._created_at
 
     @property
     def id(self):
         return self._id
-
-    @property
-    def description(self):
-        return self._description
-
-    @property
-    def name(self):
-        return self._name
 
     @property
     def x_cord(self):
@@ -36,11 +42,19 @@ class City:
         return self._z_cord
 
     @property
-    def mayor(self):
-        return self._isMayor
+    def nether_x_cord(self):
+        return self._nether_x_cord
+
+    @property
+    def nether_z_cord(self):
+        return self._nether_z_cord
+
+    @property
+    def lane(self):
+        return self._lane
 
     def __repr__(self):
-        return f"City(id={self.id}, name={self.name}, description={self.description}, x={self.x_cord}, z={self.z_cord}, is_mayor={self.mayor})"
+        return f"City(role={self.role}, created_at={self.created_at}, id={self.id}, x_cord={self.x_cord}, z_cord={self.z_cord}, nether_x_cord={self.nether_x_cord}, nether_z_cord={self.nether_z_cord}, lane={self.lane})"
 
 
 class Cards:
@@ -71,12 +85,26 @@ class Cards:
 
 
 class Account:
-    def __init__(self, account_id, username, status, roles, created_at, cards, city):
+    def __init__(self, account_id, username, minecraft_uuid, status, roles, created_at, cards, cities):
         self._id = account_id
         self._username = username
+        self._minecraft_uuid = minecraft_uuid
         self._status = status
         self._roles = roles
-        self._city = City(**city) if city else None
+        self._cities = [
+            City(
+                role=city["role"],
+                created_at=city["createdAt"],
+                id=city["city"]["id"],
+                name=city["city"]["name"],
+                x_cord=city["city"]["x"],
+                z_cord=city["city"]["z"],
+                nether_x_cord=city["city"]["netherX"],
+                nether_z_cord=city["city"]["netherZ"],
+                lane=city["city"]["lane"],
+            )
+            for city in cities
+        ]
         self._cards = [
             Cards(
                 card_id=card["id"],
@@ -97,6 +125,10 @@ class Account:
         return self._username
 
     @property
+    def minecraft_uuid(self):
+        return self._minecraft_uuid
+
+    @property
     def status(self):
         return self._status
 
@@ -105,8 +137,8 @@ class Account:
         return self._roles
 
     @property
-    def city(self):
-        return self._city
+    def cities(self):
+        return self._cities
 
     @property
     def cards(self):
@@ -117,4 +149,4 @@ class Account:
         return self._created_at
 
     def __repr__(self):
-        return f"Account(id={self.id}, username={self.username}, status={self.status}, roles={self.roles}, city={self.city}, cards={self.cards}, created_at={self.created_at})"
+        return f"Account(id={self.id}, username={self.username}, minecraft_uuid={self.minecraft_uuid}, status={self.status}, roles={self.roles}, cities={self.cities}, cards={self.cards}, created_at={self.created_at})"

@@ -92,9 +92,10 @@ class SPAPI(APISession):
         return Account(
                 account_id=me['id'],
                 username=me['username'],
+                minecraft_uuid=me['minecraftUUID'],
                 status=me['status'],
                 roles=me['roles'],
-                city=me['city'],
+                cities=me['cities'],
                 cards=me['cards'],
                 created_at=me['createdAt'])
 
@@ -203,3 +204,4 @@ class SPAPI(APISession):
         :rtype: dict
         """
         return self.__dict__.copy()
+
