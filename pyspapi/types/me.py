@@ -1,15 +1,15 @@
 class City:
     def __init__(
         self,
-        role,
-        created_at,
-        city_id,
-        name,
-        x_cord,
-        z_cord,
-        nether_x_cord,
-        nether_z_cord,
-        lane,
+        role=None,
+        created_at=None,
+        city_id=None,
+        name=None,
+        x_cord=None,
+        z_cord=None,
+        nether_x_cord=None,
+        nether_z_cord=None,
+        lane=None,
     ):
         self._role = role
         self._created_at = created_at
