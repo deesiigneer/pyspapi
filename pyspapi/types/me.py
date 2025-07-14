@@ -1,49 +1,61 @@
 class City:
-    def __init__(
-        self,
-        city_id=None,
-        name=None,
-        description=None,
-        x_cord=None,
-        z_cord=None,
-        is_mayor=None,
-    ):
+    def __init__(self, city_id=None, name=None, x=None, z=None, nether_x=None, nether_z=None, lane=None, role=None,
+                 created_at=None):
         self._id = city_id
         self._name = name
-        self._description = description
-        self._x_cord = x_cord
-        self._z_cord = z_cord
-        self._isMayor = is_mayor
+        self._x = x
+        self._z = z
+        self._nether_x = nether_x
+        self._nether_z = nether_z
+        self._lane = lane
+        self._role = role
+        self._created_at = created_at
 
     @property
     def id(self):
         return self._id
 
     @property
-    def description(self):
-        return self._description
-
-    @property
     def name(self):
         return self._name
 
     @property
-    def x_cord(self):
-        return self._x_cord
+    def x(self):
+        return self._x
 
     @property
-    def z_cord(self):
-        return self._z_cord
+    def z(self):
+        return self._z
 
     @property
-    def mayor(self):
-        return self._isMayor
+    def nether_x(self):
+        return self._nether_x
+
+    @property
+    def nether_z(self):
+        return self._nether_z
+
+    @property
+    def lane(self):
+        return self._lane
+
+    @property
+    def role(self):
+        return self._role
+
+    @property
+    def created_at(self):
+        return self._created_at
 
     def __repr__(self):
-        return f"City(id={self.id}, name={self.name}, description={self.description}, x={self.x_cord}, z={self.z_cord}, is_mayor={self.mayor})"
+        return (
+            f"City(id={self._id}, name={self._name}, x={self._x}, z={self._z}, "
+            f"nether_x={self._nether_x}, nether_z={self._nether_z}, lane={self._lane}, role={self._role}, "
+            f"created_at={self._created_at})"
+        )
 
 
-class Cards:
+class Card:
     def __init__(self, card_id=None, name=None, number=None, color=None):
         self._id = card_id
         self._name = name
@@ -67,18 +79,32 @@ class Cards:
         return self._color
 
     def __repr__(self):
-        return f"Card(id={self.id}, name={self.name}, number={self.number}, color={self.color})"
+        return f"Card(id={self._id}, name={self._name}, number={self._number}, color={self._color})"
 
 
 class Account:
-    def __init__(self, account_id, username, status, roles, created_at, cards, city):
+    def __init__(self, account_id, username, minecraftuuid, status, roles, created_at, cards, cities):
         self._id = account_id
         self._username = username
+        self._minecraftuuid = minecraftuuid
         self._status = status
         self._roles = roles
-        self._city = City(**city) if city else None
+        self._cities = [
+            City(
+                city_id=city['city_id'],
+                name=city['name'],
+                x=city['x'],
+                z=city['z'],
+                nether_x=city['nether_x'],
+                nether_z=city['nether_z'],
+                lane=city['lane'],
+                role=city['role'],
+                created_at=city['created_at'],
+            )
+            for city in cities
+        ]
         self._cards = [
-            Cards(
+            Card(
                 card_id=card["id"],
                 name=card["name"],
                 number=card["number"],
@@ -97,6 +123,10 @@ class Account:
         return self._username
 
     @property
+    def minecraftuuid(self):
+        return self._minecraftuuid
+
+    @property
     def status(self):
         return self._status
 
@@ -105,8 +135,8 @@ class Account:
         return self._roles
 
     @property
-    def city(self):
-        return self._city
+    def cities(self):
+        return self._cities
 
     @property
     def cards(self):
@@ -117,4 +147,6 @@ class Account:
         return self._created_at
 
     def __repr__(self):
-        return f"Account(id={self.id}, username={self.username}, status={self.status}, roles={self.roles}, city={self.city}, cards={self.cards}, created_at={self.created_at})"
+        return (f"Account(id={self._id}, username={self._username}, minecraftUUID={self._minecraftuuid}, "
+                f"status={self._status}, roles={self._roles}, cities={self._cities}, cards={self._cards}, "
+                f"created_at={self._created_at})")

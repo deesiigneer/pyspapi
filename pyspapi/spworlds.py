@@ -1,21 +1,30 @@
+from base64 import b64encode
+from hashlib import sha256
+from hmac import new, compare_digest
+from typing import Optional
+
 from .api import APISession
 from .types import User
 from .types.me import Account
 from .types.payment import Item
-from hmac import new, compare_digest
-from hashlib import sha256
-from base64 import b64encode
-import aiohttp
 
 __all__ = ['SPAPI']
 
 
 class SPAPI(APISession):
     """
-    Представляет собой клиент API для взаимодействия с конкретным сервисом.
+    pyspapi — высокоуровневый клиент для взаимодействия с SPWorldsAPI.
+
+    Предоставляет удобные методы для работы с балансом карты, вебхуками,
+    информацией о пользователе, транзакциями и платежами, а также верификацией вебхуков.
     """
 
-    def __init__(self, card_id=None, token=None, timeout=5, sleep_time=0.2, retries=0):
+    def __init__(self, card_id: str,
+                 token: str,
+                 timeout: int = 5,
+                 sleep_time: float = 0.2,
+                 retries: int = 0,
+                 raise_exception: bool = False):
         """
         Инициализирует объект SPAPI.
 
@@ -24,13 +33,15 @@ class SPAPI(APISession):
         :param token: Токен API.
         :type token: str
         :param timeout: Таймаут для запросов API в секундах. По умолчанию 5.
-        :type timeout: int, optional
+        :type timeout: int
         :param sleep_time: Время ожидания между повторными запросами в секундах. По умолчанию 0.2.
-        :type sleep_time: float, optional
+        :type sleep_time: float
         :param retries: Количество повторных попыток для неудачных запросов. По умолчанию 0.
-        :type retries: int, optional
+        :type retries: int
+        :param raise_exception: Поднимать исключения при ошибке, если True.
+        :type raise_exception: bool
         """
-        super().__init__(card_id, token, timeout, sleep_time, retries)
+        super().__init__(card_id, token, timeout, sleep_time, retries, raise_exception)
         self.__card_id = card_id
         self.__token = token
 
@@ -38,67 +49,48 @@ class SPAPI(APISession):
         """
         Возвращает строковое представление объекта SPAPI.
         """
-        return "%s(%s)" % (
-            self.__class__.__name__,
-            self.__dict__
-        )
-
-    async def __get(self, method):
-        """
-        Выполняет GET-запрос к API.
-
-        :param method: Метод API для вызова.
-        :type method: str
-
-        :return: JSON-ответ от API.
-        :rtype: dict
-        """
-        async with APISession(self.__card_id, self.__token) as session:
-            response = await session.get(method)
-            response = await response.json()
-            return response
+        return f"{self.__class__.__name__}({vars(self)})"
 
     @property
-    async def balance(self):
+    async def balance(self) -> Optional[int]:
         """
         Получает текущий баланс карты.
 
         :return: Текущий баланс карты.
         :rtype: int
         """
-        card = await self.__get('card')
-        return card['balance']
+        return int((await super().get('card'))['balance'])
 
     @property
-    async def webhook(self) -> str:
+    async def webhook(self) -> Optional[str]:
         """
         Получает URL вебхука, связанного с картой.
 
         :return: URL вебхука.
         :rtype: str
         """
-        card = await self.__get('card')
-        return card['webhook']
+        return str((await super().get('card'))['webhook'])
 
     @property
-    async def me(self):
+    async def me(self) -> Optional[Account]:
         """
         Получает информацию об аккаунте текущего пользователя.
 
         :return: Объект Account, представляющий аккаунт текущего пользователя.
-        :rtype: Account
+        :rtype: :class:`Account`
         """
-        me = await self.__get('accounts/me')
+        me = await super().get('accounts/me')
         return Account(
                 account_id=me['id'],
                 username=me['username'],
+            minecraftuuid=me['minecraftUUID'],
                 status=me['status'],
                 roles=me['roles'],
-                city=me['city'],
+            cities=me['cities'],
                 cards=me['cards'],
                 created_at=me['createdAt'])
 
-    async def get_user(self, discord_id: int) -> User:
+    async def get_user(self, discord_id: int) -> Optional[User]:
         """
         Получает информацию о пользователе по его ID в Discord.
 
@@ -106,13 +98,13 @@ class SPAPI(APISession):
         :type discord_id: int
 
         :return: Объект User, представляющий пользователя.
-        :rtype: User
+        :rtype: :class:`User`
         """
-        user = await self.__get(f'users/{discord_id}')
-        cards = await self.__get(f"accounts/{user['username']}/cards")
+        user = await super().get(f'users/{discord_id}')
+        cards = await super().get(f"accounts/{user['username']}/cards")
         return User(user['username'], user['uuid'], cards)
 
-    async def create_transaction(self, receiver: str, amount: int, comment: str):
+    async def create_transaction(self, receiver: str, amount: int, comment: str) -> Optional[int]:
         """
         Создает транзакцию.
 
@@ -126,17 +118,15 @@ class SPAPI(APISession):
         :return: Баланс после транзакции.
         :rtype: int
         """
-        async with APISession(self.__card_id, self.__token) as session:
-            data = {
-                'receiver': receiver,
-                'amount': amount,
-                'comment': comment
-            }
-            res = await session.post('transactions', data)
-            res = await res.json()
-        return res['balance']
+        data = {
+            'receiver': receiver,
+            'amount': amount,
+            'comment': comment
+        }
 
-    async def create_payment(self, webhook_url: str, redirect_url: str, data: str, items) -> str:
+        return int((await super().post('transactions', data))['balance'])
+
+    async def create_payment(self, webhook_url: str, redirect_url: str, data: str, items: list[Item]) -> Optional[str]:
         """
         Создает платеж.
 
@@ -148,40 +138,30 @@ class SPAPI(APISession):
         :type data: str
         :param items: Элементы, включаемые в платеж.
 
-        :return: URL для платежа.
+        :return: URL для платежа или None при ошибке.
         :rtype: str
         """
-        async with APISession(self.__card_id, self.__token) as session:
-            data = {
-                'items': items,
-                'redirectUrl': redirect_url,
-                'webhookUrl': webhook_url,
-                'data': data
-            }
-            res = await session.post('payments',data)
-            res = await res.json()
-        return res['url']
+        data = {
+            'items': items,
+            'redirectUrl': redirect_url,
+            'webhookUrl': webhook_url,
+            'data': data
+        }
 
-    async def update_webhook(self, url: str):
+        return str((await super().post('payments', data))['url'])
+
+    async def update_webhook(self, url: str) -> Optional[dict]:
         """
         Обновляет URL вебхука, связанного с картой.
 
         :param url: Новый URL вебхука.
-        :type url: str
-
-        :return: JSON-ответ от API.
-        :rtype: dict
+        :return: Ответ API в виде словаря или None при ошибке.
         """
-        async with APISession(self.__card_id, self.__token) as session:
-            data = {
-                'url': url
-            }
-            res = await session.put(endpoint='card/webhook', data=data)
-            if res:
-                res = await res.json()
-        return res
+        data = {'url': url}
 
-    def webhook_verify(self, data: str, header) -> bool:
+        return await super().put('card/webhook', data)
+
+    def webhook_verify(self, data: str, header: str) -> bool:
         """
         Проверяет достоверность вебхука.
 
