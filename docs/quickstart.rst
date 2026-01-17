@@ -4,17 +4,17 @@
 
 .. currentmodule:: pyspapi
 
-Quickstart
-==========
+Быстрый старт
+==============
 
-This page gives a brief introduction to the library.
+На этой странице дается краткое введение в библиотеку.
 
-Checking balance
-----------------
+Проверка баланса
+-----------------
 
-Let's output the amount of money remaining in the card account to the console.
+Выведем количество денег, оставшихся на счету карты, на консоль.
 
-It looks something like this:
+Это выглядит примерно так:
 
 .. code-block:: python
 
@@ -30,7 +30,6 @@ It looks something like this:
     loop = get_event_loop()
     loop.run_until_complete(main())
 
-Make sure not to name it ``pyspapi`` as that'll conflict with the library.
+Убедитесь, что вы не называете его ``pyspapi``, так как это вызовет конфликт с библиотекой.
 
-
-You can find more examples in the `examples directory <https://github.com/deesiigneer/pyspapi/tree/main/examples/>`_ on GitHub.
+Вы можете найти больше примеров в `папке примеров <https://github.com/deesiigneer/pyspapi/tree/main/examples/>`_ на GitHub.

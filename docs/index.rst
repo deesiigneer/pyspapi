@@ -1,32 +1,31 @@
 :theme_html_remove_secondary_sidebar:
 
-Welcome to pyspapi
-===================
+Добро пожаловать в pyspapi
+===========================
 
-API wrapper for SP servers written in Python.
+Обертка API для SPWorlds серверов, написанная на Python.
 
-Getting started
+Начало работы
 ---------------
 
-Is this your first time using the library? This is the place to get started!
+Вы впервые используете библиотеку? Это место, с которого нужно начать!
 
-- **First steps:** :ref:`Quickstart <quickstart>`
-- **Examples:** Many examples are available in the `examples directory <https://github.com/deesiigneer/pyspapi/tree/main/examples/>`_.
+- **Первые шаги:** :ref:`Быстрый старт <quickstart>`
+- **Примеры:** Много примеров доступно в `папке примеров <https://github.com/deesiigneer/pyspapi/tree/main/examples/>`_.
 
-Getting help
-------------
+Получение помощи
+------------------
 
-If you're having trouble with something, these resources might help.
+Если у вас есть проблемы с чем-то, эти ресурсы могут помочь.
 
-- Ask questions in `Discord <https://discord.gg/VbyHaKRAaN>`_ server.
-- If you're looking for something specific, try the :ref:`searching <search>`.
-- Report bugs in the `issue tracker <https://github.com/deesiigneer/pyspapi/issues>`_.
-- Ask in `GitHub discussions page <https://github.com/deesiigneer/pyspapi/discussions>`_.
+- Задавайте вопросы на сервере `Discord <https://discord.gg/VbyHaKRAaN>`_.
+- Если вы ищете что-то конкретное, попробуйте :ref:`поиск <search>`.
+- Сообщайте об ошибках в `трекер проблем <https://github.com/deesiigneer/pyspapi/issues>`_.
 
-Manuals
--------
+Руководства
+-----------
 
-These pages go into great detail about everything the API can do.
+Эти страницы подробно описывают все, что может сделать API.
 
 .. toctree::
   :maxdepth: 1

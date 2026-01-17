@@ -1,25 +1,25 @@
 .. currentmodule:: pyspapi
 
-API Reference
+Справочник API
 ===============
 
-The following section outlines the API of pyspapi.
+В следующем разделе описывается API pyspapi.
 
-Version  Info
+Информация о версии
 ---------------------
 
-There are two main ways to query version information.
+Существует два основных способа запроса информации о версии.
 
 .. data:: version_info
 
-    A named tuple that is similar to :obj:`py:sys.version_info`.
+    Именованный кортеж, аналогичный :obj:`py:sys.version_info`.
 
-    Just like :obj:`py:sys.version_info` the valid values for ``releaselevel`` are
-    'alpha', 'beta', 'candidate' and 'final'.
+    Как и в :obj:`py:sys.version_info`, допустимые значения для ``releaselevel`` это
+    'alpha', 'beta', 'candidate' и 'final'.
 
 .. data:: __version__
 
-    A string representation of the version.
+    Строковое представление версии.
 
 ``pyspapi``
 -----------
