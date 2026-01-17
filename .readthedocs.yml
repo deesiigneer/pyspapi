@@ -1,15 +1,13 @@
 version: 2
-formats: []
 
 build:
   os: ubuntu-lts-latest
   tools:
-    python: '3.8'
+    python: '3.12'
 
 
 sphinx:
   configuration: docs/conf.py
-  fail_on_warning: false
   builder: html
 
 python:
@@ -18,4 +16,3 @@ python:
       path: .
       extra_requirements:
         - docs
-    - requirements: docs/requirements.txt
