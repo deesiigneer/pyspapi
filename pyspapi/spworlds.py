@@ -4,27 +4,31 @@ from hmac import new, compare_digest
 from typing import Optional
 
 from .api import APISession
-from .types import User
-from .types.me import Account
-from .types.payment import Item
+from pyspapi.types import User
+from pyspapi.types.me import Account
+from pyspapi.types.payment import Item
 
-__all__ = ['SPAPI']
+__all__ = ["SPAPI"]
 
 
 class SPAPI(APISession):
     """
-    pyspapi — высокоуровневый клиент для взаимодействия с SPWorldsAPI.
+    pyspapi — высокоуровневый клиент для взаимодействия с SPWorlds API.
 
     Предоставляет удобные методы для работы с балансом карты, вебхуками,
     информацией о пользователе, транзакциями и платежами, а также верификацией вебхуков.
     """
 
-    def __init__(self, card_id: str,
-                 token: str,
-                 timeout: int = 5,
-                 sleep_time: float = 0.2,
-                 retries: int = 0,
-                 raise_exception: bool = False):
+    def __init__(
+        self,
+        card_id: str,
+        token: str,
+        timeout: int = 5,
+        sleep_time: float = 0.2,
+        retries: int = 0,
+        raise_exception: bool = False,
+        proxy: str = None,
+    ):
         """
         Инициализирует объект SPAPI.
 
@@ -40,8 +44,12 @@ class SPAPI(APISession):
         :type retries: int
         :param raise_exception: Поднимать исключения при ошибке, если True.
         :type raise_exception: bool
+        :param proxy: Прокся!
+        :type proxy: str
         """
-        super().__init__(card_id, token, timeout, sleep_time, retries, raise_exception)
+        super().__init__(
+            card_id, token, timeout, sleep_time, retries, raise_exception, proxy
+        )
         self.__card_id = card_id
         self.__token = token
 
@@ -59,7 +67,7 @@ class SPAPI(APISession):
         :return: Текущий баланс карты.
         :rtype: int
         """
-        return int((await super().get('card'))['balance'])
+        return int((await super().get("card"))["balance"])
 
     @property
     async def webhook(self) -> Optional[str]:
@@ -69,7 +77,7 @@ class SPAPI(APISession):
         :return: URL вебхука.
         :rtype: str
         """
-        return str((await super().get('card'))['webhook'])
+        return str((await super().get("card"))["webhook"])
 
     @property
     async def me(self) -> Optional[Account]:
@@ -79,16 +87,17 @@ class SPAPI(APISession):
         :return: Объект Account, представляющий аккаунт текущего пользователя.
         :rtype: :class:`Account`
         """
-        me = await super().get('accounts/me')
+        me = await super().get("accounts/me")
         return Account(
-                account_id=me['id'],
-                username=me['username'],
-            minecraftuuid=me['minecraftUUID'],
-                status=me['status'],
-                roles=me['roles'],
-            cities=me['cities'],
-                cards=me['cards'],
-                created_at=me['createdAt'])
+            account_id=me["id"],
+            username=me["username"],
+            minecraftuuid=me["minecraftUUID"],
+            status=me["status"],
+            roles=me["roles"],
+            cities=me["cities"],
+            cards=me["cards"],
+            created_at=me["createdAt"],
+        )
 
     async def get_user(self, discord_id: int) -> Optional[User]:
         """
@@ -100,11 +109,16 @@ class SPAPI(APISession):
         :return: Объект User, представляющий пользователя.
         :rtype: :class:`User`
         """
-        user = await super().get(f'users/{discord_id}')
-        cards = await super().get(f"accounts/{user['username']}/cards")
-        return User(user['username'], user['uuid'], cards)
+        user = await super().get(f"users/{discord_id}")
+        if user:
+            cards = await super().get(f"accounts/{user['username']}/cards")
+            return User(user["username"], user["uuid"], cards)
+        else:
+            return None
 
-    async def create_transaction(self, receiver: str, amount: int, comment: str) -> Optional[int]:
+    async def create_transaction(
+        self, receiver: str, amount: int, comment: str
+    ) -> Optional[int]:
         """
         Создает транзакцию.
 
@@ -118,15 +132,13 @@ class SPAPI(APISession):
         :return: Баланс после транзакции.
         :rtype: int
         """
-        data = {
-            'receiver': receiver,
-            'amount': amount,
-            'comment': comment
-        }
+        data = {"receiver": receiver, "amount": amount, "comment": comment}
 
-        return int((await super().post('transactions', data))['balance'])
+        return int((await super().post("transactions", data))["balance"])
 
-    async def create_payment(self, webhook_url: str, redirect_url: str, data: str, items: list[Item]) -> Optional[str]:
+    async def create_payment(
+        self, webhook_url: str, redirect_url: str, data: str, items: list[Item]
+    ) -> Optional[str]:
         """
         Создает платеж.
 
@@ -142,13 +154,13 @@ class SPAPI(APISession):
         :rtype: str
         """
         data = {
-            'items': items,
-            'redirectUrl': redirect_url,
-            'webhookUrl': webhook_url,
-            'data': data
+            "items": items,
+            "redirectUrl": redirect_url,
+            "webhookUrl": webhook_url,
+            "data": data,
         }
 
-        return str((await super().post('payments', data))['url'])
+        return str((await super().post("payments", data))["url"])
 
     async def update_webhook(self, url: str) -> Optional[dict]:
         """
@@ -157,9 +169,9 @@ class SPAPI(APISession):
         :param url: Новый URL вебхука.
         :return: Ответ API в виде словаря или None при ошибке.
         """
-        data = {'url': url}
+        data = {"url": url}
 
-        return await super().put('card/webhook', data)
+        return await super().put("card/webhook", data)
 
     def webhook_verify(self, data: str, header: str) -> bool:
         """
@@ -172,8 +184,8 @@ class SPAPI(APISession):
         :return: True, если заголовок из вебхука достоверен, иначе False.
         :rtype: bool
         """
-        hmac_data = b64encode(new(self.__token.encode('utf-8'), data, sha256).digest())
-        return compare_digest(hmac_data, header.encode('utf-8'))
+        hmac_data = b64encode(new(self.__token.encode("utf-8"), data, sha256).digest())
+        return compare_digest(hmac_data, header.encode("utf-8"))
 
     def to_dict(self) -> dict:
         """
