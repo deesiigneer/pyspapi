@@ -1,6 +1,6 @@
 [project]
 name = "pyspapi"
-version = "3.3.0"
+version = "3.3.1"
 description = "API wrapper for SP servers written in Python."
 readme = "README.rst"
 license = { text = "MIT" }
@@ -27,3 +27,6 @@ dev = ["ruff>=0.14,<0.15", "toml-sort>=0.24,<0.25"]
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = true
