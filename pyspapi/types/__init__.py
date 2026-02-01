@@ -1,5 +1,5 @@
-from .me import Account
-from .payment import Item
-from .users import Cards, User
+from pyspapi.types.me import Account
+from pyspapi.types.payment import Item
+from pyspapi.types.users import Cards, User
 
-__all__ = [Account, Item, Cards, User]
+__all__ = ["Account", "Item", "Cards", "User"]

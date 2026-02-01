@@ -1,9 +1,10 @@
 from base64 import b64encode
 from hashlib import sha256
-from hmac import new, compare_digest
+from hmac import compare_digest, new
 from typing import Optional
 
-from .api import APISession
+from pyspapi.api import APISession
+from pyspapi.exceptions import InsufficientBalanceError
 from pyspapi.types import User
 from pyspapi.types.me import Account
 from pyspapi.types.payment import Item
@@ -44,7 +45,7 @@ class SPAPI(APISession):
         :type retries: int
         :param raise_exception: Поднимать исключения при ошибке, если True.
         :type raise_exception: bool
-        :param proxy: Прокся!
+        :param proxy: Прокси для подключения к API. По умолчанию None.
         :type proxy: str
         """
         super().__init__(
@@ -67,7 +68,15 @@ class SPAPI(APISession):
         :return: Текущий баланс карты.
         :rtype: int
         """
-        return int((await super().get("card"))["balance"])
+        try:
+            response = await super().get("card")
+            if response is None:
+                return None
+            return int(response.get("balance", 0))
+        except (KeyError, ValueError, TypeError) as e:
+            log = __import__("logging").getLogger("pyspapi")
+            log.error(f"Failed to parse balance response: {e}")
+            return None
 
     @property
     async def webhook(self) -> Optional[str]:
@@ -77,7 +86,15 @@ class SPAPI(APISession):
         :return: URL вебхука.
         :rtype: str
         """
-        return str((await super().get("card"))["webhook"])
+        try:
+            response = await super().get("card")
+            if response is None:
+                return None
+            return str(response.get("webhook", ""))
+        except (KeyError, ValueError, TypeError) as e:
+            log = __import__("logging").getLogger("pyspapi")
+            log.error(f"Failed to parse webhook response: {e}")
+            return None
 
     @property
     async def me(self) -> Optional[Account]:
@@ -87,17 +104,25 @@ class SPAPI(APISession):
         :return: Объект Account, представляющий аккаунт текущего пользователя.
         :rtype: :class:`Account`
         """
-        me = await super().get("accounts/me")
-        return Account(
-            account_id=me["id"],
-            username=me["username"],
-            minecraftuuid=me["minecraftUUID"],
-            status=me["status"],
-            roles=me["roles"],
-            cities=me["cities"],
-            cards=me["cards"],
-            created_at=me["createdAt"],
-        )
+        try:
+            me = await super().get("accounts/me")
+            if me is None:
+                return None
+
+            return Account(
+                account_id=me.get("id"),
+                username=me.get("username"),
+                minecraftuuid=me.get("minecraftUUID"),
+                status=me.get("status"),
+                roles=me.get("roles", []),
+                cities=me.get("cities", []),
+                cards=me.get("cards", []),
+                created_at=me.get("createdAt"),
+            )
+        except (KeyError, TypeError) as e:
+            log = __import__("logging").getLogger("pyspapi")
+            log.error(f"Failed to parse account response: {e}")
+            return None
 
     async def get_user(self, discord_id: int) -> Optional[User]:
         """
@@ -109,11 +134,22 @@ class SPAPI(APISession):
         :return: Объект User, представляющий пользователя.
         :rtype: :class:`User`
         """
-        user = await super().get(f"users/{discord_id}")
-        if user:
+        if not discord_id:
+            raise ValueError("discord_id must be a non-empty integer")
+
+        try:
+            user = await super().get(f"users/{discord_id}")
+            if user is None:
+                return None
+
             cards = await super().get(f"accounts/{user['username']}/cards")
+            if cards is None:
+                cards = []
+
             return User(user["username"], user["uuid"], cards)
-        else:
+        except (KeyError, TypeError) as e:
+            log = __import__("logging").getLogger("pyspapi")
+            log.error(f"Failed to parse user response: {e}")
             return None
 
     async def create_transaction(
@@ -132,9 +168,27 @@ class SPAPI(APISession):
         :return: Баланс после транзакции.
         :rtype: int
         """
-        data = {"receiver": receiver, "amount": amount, "comment": comment}
+        if not receiver:
+            raise ValueError("receiver must be a non-empty string")
+        if not isinstance(amount, int) or amount <= 0:
+            raise ValueError("amount must be a positive integer")
 
-        return int((await super().post("transactions", data))["balance"])
+        try:
+            data = {"receiver": receiver, "amount": amount, "comment": comment}
+            response = await super().post("transactions", data)
+
+            if response is None:
+                return None
+
+            return int(response.get("balance", 0))
+        except (KeyError, ValueError, TypeError) as e:
+            log = __import__("logging").getLogger("pyspapi")
+            log.error(f"Failed to create transaction: {e}")
+            return None
+        except InsufficientBalanceError as ibe:
+            log = __import__("logging").getLogger("pyspapi")
+            log.error(f"Insufficient balance for transaction: {ibe}")
+            return None
 
     async def create_payment(
         self, webhook_url: str, redirect_url: str, data: str, items: list[Item]
@@ -153,14 +207,29 @@ class SPAPI(APISession):
         :return: URL для платежа или None при ошибке.
         :rtype: str
         """
-        data = {
-            "items": items,
-            "redirectUrl": redirect_url,
-            "webhookUrl": webhook_url,
-            "data": data,
-        }
+        if not webhook_url or not redirect_url:
+            raise ValueError("webhook_url and redirect_url must be non-empty strings")
+        if not items or len(items) == 0:
+            raise ValueError("items must contain at least one item")
 
-        return str((await super().post("payments", data))["url"])
+        try:
+            payload = {
+                "items": items,
+                "redirectUrl": redirect_url,
+                "webhookUrl": webhook_url,
+                "data": data,
+            }
+
+            response = await super().post("payments", payload)
+
+            if response is None:
+                return None
+
+            return str(response.get("url", ""))
+        except (KeyError, ValueError, TypeError) as e:
+            log = __import__("logging").getLogger("pyspapi")
+            log.error(f"Failed to create payment: {e}")
+            return None
 
     async def update_webhook(self, url: str) -> Optional[dict]:
         """
@@ -169,9 +238,21 @@ class SPAPI(APISession):
         :param url: Новый URL вебхука.
         :return: Ответ API в виде словаря или None при ошибке.
         """
-        data = {"url": url}
+        if not url:
+            raise ValueError("url must be a non-empty string")
 
-        return await super().put("card/webhook", data)
+        try:
+            data = {"url": url}
+            response = await super().put("card/webhook", data)
+
+            if response is None:
+                return None
+
+            return response
+        except (KeyError, TypeError) as e:
+            log = __import__("logging").getLogger("pyspapi")
+            log.error(f"Failed to update webhook: {e}")
+            return None
 
     def webhook_verify(self, data: str, header: str) -> bool:
         """

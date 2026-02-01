@@ -1,3 +1,3 @@
 from .api import APISession
 
-__all__ = [APISession]
+__all__ = ["APISession"]
