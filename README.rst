@@ -24,7 +24,7 @@ pyspapi
 
 Installation
 -------------
-**Requires Python 3.8 or higher**
+**Requires Python 3.12 or higher**
 
 *Windows*
 
