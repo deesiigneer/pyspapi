@@ -1,6 +1,6 @@
 [project]
 name = "pyspapi"
-version = "3.3.1"
+version = "3.3.2"
 description = "API wrapper for SP servers written in Python."
 readme = "README.rst"
 license = { text = "MIT" }
