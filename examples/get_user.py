@@ -10,6 +10,10 @@ async def main():
     print(user.username, user.uuid)
     for card in user.cards:
         print(card.name, card.number)
+    user = await spapi.get_user_by_minecraft("63ed47877aa3470fbfc46c5356c3d797")
+    print(user.username, user.uuid)
+    for card in user.cards:
+        print(card.name, card.number)
 
 
 asyncio.run(main())

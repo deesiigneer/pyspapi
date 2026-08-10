@@ -152,6 +152,34 @@ class SPAPI(APISession):
             log.error(f"Failed to parse user response: {e}")
             return None
 
+    async def get_user_by_minecraft(self, uuid: str) -> Optional[User]:
+        """
+        Получает информацию о пользователе по его UUID в Minecraft.
+
+        :param uuid: UUID пользователя в Minecraft.
+        :type uuid: str
+
+        :return: Объект User, представляющий пользователя.
+        :rtype: :class:`User`
+        """
+        if not uuid or not isinstance(uuid, str):
+            raise ValueError("uuid must be a non-empty string")
+
+        try:
+            user = await super().get(f"users/by-minecraft/{uuid}")
+            if user is None:
+                return None
+
+            cards = await super().get(f"accounts/{user['username']}/cards")
+            if cards is None:
+                cards = []
+
+            return User(user["username"], user["uuid"], cards)
+        except (KeyError, TypeError) as e:
+            log = __import__("logging").getLogger("pyspapi")
+            log.error(f"Failed to parse user response: {e}")
+            return None
+
     async def create_transaction(
         self, receiver: str, amount: int, comment: str
     ) -> Optional[int]:
